@@ -113,12 +113,14 @@ done
 
 codepath="${code_path%/}"
 codeconf="${codepath}/${code_conf}"
-urlalias="${wsgi_alias%/}"
-urlalias="/${urlalias#/}"
+urlalias="${home_alias%/}"
+wsgipath="${wsgi_alias%/}"
+wsgipath="/${wsgipath#/}"
 wsgifile="${codepath}/${wsgi_file}"
 conffile="${selected%.*}.cfg"
 
 echo urlalias: $urlalias
+echo wsgipath: $urlalias
 echo wsgifile: $wsgifile
 echo codepath: $codepath
 echo codeconf: $codeconf
@@ -186,17 +188,28 @@ Alias "${urlalias}/styles" "$codepath/styles"
 Alias "${urlalias}/index.html" "$codepath/index.html"
 Alias "${urlalias}/revision" "$codepath/revision"
 
+WSGIPythonHome /home/icersong/.virtualenvs/som-py2.7/
+WSGIPythonPath /home/icersong/.virtualenvs/som-py2.7/lib/python2.7/site-packages
 WSGIDaemonProcess app-wf2 \\
         python-eggs=/tmp/python-eggs \\
         python-home=${python_home} \\
         python-path=${python_path} \\
         user=${apache_user} group=${apache_group} \\
         processes=1 threads=9 display-name=%{GROUP}-wf2
-WSGIScriptAlias ${urlalias} $wsgifile
-<Location "${code_location}">
+WSGIScriptAlias ${wsgipath} $wsgifile
+<Location "${codepath}">
     WSGIProcessGroup app-wf2
     WSGIApplicationGroup %{GLOBAL}
+    Options FollowSymlinks
+    Require all granted
 </Location>
+<Directory "${codepath}">
+    Options Indexes FollowSymLinks
+    AllowOverride None
+    Require all granted
+    Order allow,deny
+    Allow from all
+</Directory>
 EOF
 # ----------------------------------------------------------------
 
