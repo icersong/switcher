@@ -1,10 +1,12 @@
 #!/bin/bash
-# Copyright: 2014.12.28 - 2015 v1.1
+# Copyright: 2014.12.28 - 2017 v1.1
 # Author: icersong
-# Modified: 2015.09.29
+# Modified: 2017.03
 
 
 # ================================================================
+curruser=`whoami`
+system=`uname`
 scriptfile=${0##*/}
 scriptname=${scriptfile%.*}
 script_ext=${scriptfile##*.}
@@ -17,13 +19,15 @@ scriptpath=$(cd `dirname $0`; pwd)
 
 # ================================================================
 # script config
-scriptconf="$scriptpath/${scriptname}.cfg"
-echo scriptconf: $scriptconf
+scriptconf="$scriptpath/${scriptname}-${system}-${curruser}.cfg"
+if [ ! -f "$scriptconf" ]; then
+    scriptconf="$scriptpath/${scriptname}.cfg"
+fi
 if [ ! -f "$scriptconf" ]; then
     echo "Error! Cofnig file '$scriptconf' not exists."
     exit
 fi
-
+echo scriptconf: $scriptconf
 
 # parse script config file
 for line in  `cat $scriptconf`
