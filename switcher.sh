@@ -1,10 +1,12 @@
 #!/bin/bash
-# Copyright: 2014.12.28 - 2015 v1.1
+# Copyright: 2014.12.28 - 2017 v1.1
 # Author: icersong
-# Modified: 2015.09.29
+# Modified: 2017.03
 
 
 # ================================================================
+curruser=`whoami`
+platform=`uname`
 scriptfile=${0##*/}
 scriptname=${scriptfile%.*}
 script_ext=${scriptfile##*.}
@@ -17,29 +19,30 @@ scriptpath=$(cd `dirname $0`; pwd)
 
 # ================================================================
 # script config
-scriptconf="$scriptpath/${scriptname}.cfg"
-echo scriptconf: $scriptconf
+scriptconf="$scriptpath/${scriptname}-${platform}-${curruser}.cfg"
+if [ ! -f "$scriptconf" ]; then
+    scriptconf="$scriptpath/${scriptname}.cfg"
+fi
 if [ ! -f "$scriptconf" ]; then
     echo "Error! Cofnig file '$scriptconf' not exists."
     exit
 fi
-
+echo scriptconf: $scriptconf
 
 # parse script config file
 for line in  `cat $scriptconf`
 do
-    if [ "$line" == "" ] || [ "${line:0:1}" == "#" ] || [ "${line:0:1}" == ";" ] ; then
+    if [ -z "$line" ] || [ "${line:0:1}" == "#" ] || [ "${line:0:1}" == ";" ] ; then
         continue
     fi
     name=${line%=*}
-    text=${line##*=}
-    if [ -z "$name" ]; then
+    if [ "${name}" == "${line}" ]; then
         continue
     fi
-
+    text=${line##*=}
+    # echo ${line} ${name} ${text}
     eval ${name}="$text"
 done
-
 
 # config path
 if [ -z "$config_path" ] || [ "${config_path:0:1}" != "/" ]; then
@@ -108,19 +111,20 @@ do
         continue
     fi
     echo ${line} ${line:0:1}
-    eval ${name}="$text"
+    eval '${name}="$text"'
 done
 
 codepath="${code_path%/}"
 codeconf="${codepath}/${code_conf}"
 urlalias="${home_alias%/}"
-wsgipath="${wsgi_alias%/}"
-wsgipath="/${wsgipath#/}"
+wsgipath="${wsgi_alias}"
+# wsgipath="${wsgi_alias%/}"
+# wsgipath="/${wsgipath#/}"
 wsgifile="${codepath}/${wsgi_file}"
 conffile="${selected%.*}.cfg"
 
 echo urlalias: $urlalias
-echo wsgipath: $urlalias
+echo wsgipath: $wsgipath
 echo wsgifile: $wsgifile
 echo codepath: $codepath
 echo codeconf: $codeconf
@@ -188,8 +192,8 @@ Alias "${urlalias}/styles" "$codepath/styles"
 Alias "${urlalias}/index.html" "$codepath/index.html"
 Alias "${urlalias}/revision" "$codepath/revision"
 
-WSGIPythonHome /home/icersong/.virtualenvs/som-py2.7/
-WSGIPythonPath /home/icersong/.virtualenvs/som-py2.7/lib/python2.7/site-packages
+WSGIPythonHome ${python_home}
+WSGIPythonPath ${python_path}
 WSGIDaemonProcess app-wf2 \\
         python-eggs=/tmp/python-eggs \\
         python-home=${python_home} \\
