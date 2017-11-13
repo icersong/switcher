@@ -110,8 +110,9 @@ do
     if [ -z "$name" ]; then
         continue
     fi
-    echo ${line} ${line:0:1}
-    eval '${name}="$text"'
+    echo ${line}
+    eval ${name}="$text"
+    # eval '${name}="$text"'
 done
 
 codepath="${code_path%/}"
